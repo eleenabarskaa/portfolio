@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: maintenance-scheduler
+Version: 1.0.0
+Summary: Maintenance scheduling for a hospital medical-technology department
+Requires-Python: >=3.10
+Requires-Dist: pandas>=2.0
+Requires-Dist: numpy>=1.24
+Requires-Dist: openpyxl>=3.1
+Requires-Dist: jinja2>=3.1
+Requires-Dist: PyYAML>=6.0
+Requires-Dist: matplotlib>=3.7

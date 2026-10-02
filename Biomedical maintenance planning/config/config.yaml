@@ -1,0 +1,65 @@
+# Configuration for the medical-equipment maintenance scheduler.
+# All business rules that a planner may want to change live here,
+# so that no Python file has to be edited to re-plan a new period.
+
+data:
+  # Raw SAP PM export (one row = one scheduled maintenance call)
+  workbook: "data/raw/maintenance_export.xlsx"
+  orders_sheet: "Rohdaten"      # maintenance calls
+  reference_sheet: "Zusatdaten" # teams, calendar, holidays, capacities
+
+  # Columns kept from the 69-column SAP export
+  columns:
+    maintenance_plan: "Wartungsplan"
+    object_description: "Bezeichnung technisches Objekt"
+    call_status: "Abrufstatus"
+    equipment: "Equipment"
+    status: "Status neu"
+    technician_group: "Technikergruppe"
+    order_type: "Art"
+    activity_code: "ILA"
+    plan_description: "WPlan-Beschreibung"
+    due_date: "Plandatum"
+    construction_type: "Bautyp"
+    duration_hours: "Durchschnittsdauer neu"
+    location: "Standort.1"
+
+planning:
+  # Only calls with these SAP statuses are real, actionable work orders
+  keep_statuses: ["EEGB", "EHEQ"]
+
+  # Groups handled by an external service provider or a different department
+  excluded_groups: ["M", "MEDT-FRE", "M-ISM", "M-IM"]
+
+  # Groups whose work orders are exported to a separate file for the
+  # external service provider instead of being scheduled internally
+  external_groups: ["MEDT-FRE", "M-ISM", "M-IM"]
+
+  # Fallback duration (hours) when SAP has no or a zero duration.
+  # Chosen with the technical team: a half-hour visit is the shortest
+  # realistic on-site intervention including travel inside the building.
+  default_duration_hours: 0.5
+
+  # Durations marked "fremd" (external) consume no internal capacity
+  external_duration_marker: ["fremd", "Fremd"]
+
+  # How many days *before* the legal due date a task may be executed.
+  # Larger = more freedom to batch work, but the maintenance interval
+  # drifts away from the manufacturer's specification.
+  max_lead_days: 30
+
+  # Length of the rolling window used to group work by building (days).
+  # Inside one window tasks are ordered by building to cut walking time;
+  # across windows the due-date order is preserved.
+  batching_window_days: 30
+
+  # Daily maintenance capacity per technician (hours). The rest of the
+  # working day is reserved for unplanned repairs and documentation.
+  default_daily_hours: 4.0
+
+output:
+  directory: "data/processed"
+  schedule_file: "work_distribution.xlsx"
+  unscheduled_file: "unscheduled_tasks.xlsx"
+  external_file: "external_provider.xlsx"
+  metrics_file: "metrics.json"
